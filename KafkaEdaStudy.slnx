@@ -5,11 +5,15 @@
     <Project Path="src/Inventory.Worker/Inventory.Worker.csproj" />
     <Project Path="src/Notifications.Worker/Notifications.Worker.csproj" />
     <Project Path="src/Orders.Api/Orders.Api.csproj" />
+    <Project Path="src/Payments.Worker/Payments.Worker.csproj" />
     <Project Path="src/Playground.Api/Playground.Api.csproj" />
+    <Project Path="src/Shipping.Api/Shipping.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/IntegrationTests/IntegrationTests.csproj" />
     <Project Path="tests/Inventory.UnitTests/Inventory.UnitTests.csproj" />
     <Project Path="tests/Orders.UnitTests/Orders.UnitTests.csproj" />
+    <Project Path="tests/Payments.UnitTests/Payments.UnitTests.csproj" />
+    <Project Path="tests/Shipping.UnitTests/Shipping.UnitTests.csproj" />
   </Folder>
 </Solution>

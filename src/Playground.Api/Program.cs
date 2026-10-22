@@ -39,6 +39,17 @@ builder.Services.AddHttpClient<OrdersApiClient>(http =>
     http.Timeout = TimeSpan.FromSeconds(10);
 });
 builder.Services.AddTransient<IScenario, PlaceValidOrderScenario>();
+// Steps 7: the order flows that cancel, and the shipment steps. Shipping.Api is called over HTTP like Orders.Api.
+builder.Services.AddTransient<IScenario, PlaceOutOfStockOrderScenario>();
+builder.Services.AddTransient<IScenario, PlaceOverLimitOrderScenario>();
+builder.Services.AddTransient<IScenario, CancelOrderScenario>();
+builder.Services.AddHttpClient<ShippingApiClient>(http =>
+{
+    http.BaseAddress = new Uri(builder.Configuration["Services:ShippingApi"] ?? "http://localhost:5002");
+    http.Timeout = TimeSpan.FromSeconds(10);
+});
+builder.Services.AddTransient<IScenario, DispatchShipmentScenario>();
+builder.Services.AddTransient<IScenario, DeliverShipmentScenario>();
 // Fault injection (steps 4-5): a dev-only raw producer that writes duplicates and poison messages.
 builder.Services.AddSingleton<FaultInjectionProducer>();
 builder.Services.AddTransient<IScenario, ResendDuplicateEventScenario>();

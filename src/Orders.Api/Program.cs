@@ -3,6 +3,7 @@ using KafkaEdaStudy.BuildingBlocks.Hosting;
 using KafkaEdaStudy.BuildingBlocks.Persistence;
 using KafkaEdaStudy.Orders;
 using KafkaEdaStudy.Orders.Data;
+using KafkaEdaStudy.Orders.Saga;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -17,6 +18,10 @@ builder.Services.AddDbContext<OrdersDbContext>(o =>
     o.UseNpgsql(builder.Configuration.GetConnectionString("Orders")));
 // Step 6: IOutbox for the endpoints + the relay that publishes outbox rows to Kafka.
 builder.Services.AddOutbox<OrdersDbContext>();
+// Step 7: the saga. The inbox makes each answer count once; the consumer reads Inventory, Payments and Shipping.
+builder.Services.AddInbox<OrdersDbContext>();
+builder.Services.AddScoped<OrderSagaHandler>();
+builder.Services.AddHostedService<OrderAnswersConsumer>();
 
 var app = builder.Build();
 
@@ -31,3 +36,5 @@ app.MapDefaultEndpoints();
 app.MapOrderEndpoints();
 
 app.Run();
+
+public partial class Program { }

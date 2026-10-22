@@ -5,14 +5,21 @@
     <RootNamespace>KafkaEdaStudy.IntegrationTests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Testcontainers.Kafka" />
     <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/BuildingBlocks/BuildingBlocks.csproj" />
+    <!-- The four services of the order flow run in-process. Each has its own top-level Program, hence the aliases. -->
+    <ProjectReference Include="../../src/Orders.Api/Orders.Api.csproj" Aliases="OrdersApi" />
+    <ProjectReference Include="../../src/Inventory.Worker/Inventory.Worker.csproj" Aliases="InventoryWorker" />
+    <ProjectReference Include="../../src/Payments.Worker/Payments.Worker.csproj" Aliases="PaymentsWorker" />
+    <ProjectReference Include="../../src/Shipping.Api/Shipping.Api.csproj" Aliases="ShippingApi" />
   </ItemGroup>
 </Project>

@@ -81,4 +81,28 @@ public sealed class Reservation
         reservation._lines.AddRange(requested);
         return new ReserveResult(reservation, []);
     }
+
+    /// <summary>Rule I4: releases the held stock. Returns false when the reservation is no longer active.</summary>
+    public bool Release(IReadOnlyDictionary<string, StockItem> stock)
+    {
+        if (Status != ReservationStatus.Active)
+            return false;
+
+        foreach (var line in _lines)
+            stock[line.Sku].Release(line.Quantity);
+        Status = ReservationStatus.Released;
+        return true;
+    }
+
+    /// <summary>Rule I4: commits the held stock (the order shipped). Returns false when the reservation is no longer active.</summary>
+    public bool Commit(IReadOnlyDictionary<string, StockItem> stock)
+    {
+        if (Status != ReservationStatus.Active)
+            return false;
+
+        foreach (var line in _lines)
+            stock[line.Sku].Commit(line.Quantity);
+        Status = ReservationStatus.Committed;
+        return true;
+    }
 }

@@ -47,6 +47,17 @@ public sealed class Order
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
 
+    /// <summary>Rule O4: the two answers a Pending order waits for. Set by <see cref="RecordStockReserved"/> and
+    /// <see cref="RecordPaymentAuthorized"/>; the order is confirmed once both are true, in any order.</summary>
+    public bool StockReserved { get; private set; }
+    public bool PaymentAuthorized { get; private set; }
+
+    /// <summary>
+    /// Optimistic concurrency token, mapped to Postgres' <c>xmin</c>. The saga consumer and the customer's cancel
+    /// request can change the same order at the same time; the loser gets <c>DbUpdateConcurrencyException</c>.
+    /// </summary>
+    public uint Version { get; private set; }
+
     /// <summary>
     /// Creates a Pending order, enforcing rule O1: at least one line, quantity 1..10 per line,
     /// every SKU in <see cref="Products.All"/>, no duplicate SKUs. Invalid input returns errors instead of throwing.
@@ -127,6 +138,29 @@ public sealed class Order
         };
 
     public static bool CanTransition(OrderStatus from, OrderStatus to) => AllowedTransitions[from].Contains(to);
+
+    /// <summary>Returns true the first time the answer is recorded; false for a duplicate or when no answer is awaited.</summary>
+    public bool RecordStockReserved(DateTimeOffset now)
+    {
+        if (Status != OrderStatus.Pending || StockReserved)
+            return false;
+        StockReserved = true;
+        UpdatedAt = now;
+        return true;
+    }
+
+    /// <summary>Returns true the first time the answer is recorded; false for a duplicate or when no answer is awaited.</summary>
+    public bool RecordPaymentAuthorized(DateTimeOffset now)
+    {
+        if (Status != OrderStatus.Pending || PaymentAuthorized)
+            return false;
+        PaymentAuthorized = true;
+        UpdatedAt = now;
+        return true;
+    }
+
+    /// <summary>Rule O4: confirmed only when both stock and payment answered positively.</summary>
+    public bool IsReadyToConfirm => Status == OrderStatus.Pending && StockReserved && PaymentAuthorized;
 
     public bool Confirm(DateTimeOffset now) => TransitionTo(OrderStatus.Confirmed, now);
 

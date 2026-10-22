@@ -17,6 +17,10 @@ public sealed class OrdersDbContext(DbContextOptions<OrdersDbContext> options) :
             order.Property(o => o.Status).HasConversion<string>().HasMaxLength(20);
             order.Property(o => o.CancelReason).HasMaxLength(100);
             order.Property(o => o.Total).HasPrecision(18, 2);
+            order.Property(o => o.StockReserved).HasColumnName("stock_reserved");
+            order.Property(o => o.PaymentAuthorized).HasColumnName("payment_authorized");
+            // uint + IsRowVersion() is mapped by Npgsql to the xmin system column (no real column is created).
+            order.Property(o => o.Version).IsRowVersion();
             order.HasIndex(o => o.CreatedAt);
 
             order.OwnsMany(o => o.Lines, line =>

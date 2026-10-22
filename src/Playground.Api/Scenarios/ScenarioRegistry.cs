@@ -9,18 +9,8 @@ public sealed class ScenarioRegistry
 {
     private static readonly PlannedScenario[] Planned =
     [
-        new("place-out-of-stock-order", "Place out-of-stock order",
-            "Orders a product with no stock: inventory rejects the reservation and the order is cancelled."),
-        new("place-over-limit-order", "Place over-limit order",
-            "Orders more than the payment limit: payment is declined and the stock reservation is released."),
         new("place-timeout-order", "Place order that times out",
             "Places an order that never completes, so the timeout cancels it."),
-        new("cancel-order", "Cancel order",
-            "The customer cancels an order, triggering compensations (release stock, void payment)."),
-        new("dispatch-shipment", "Dispatch shipment",
-            "Dispatches the shipment of a confirmed order."),
-        new("deliver-shipment", "Deliver shipment",
-            "Marks a dispatched shipment as delivered."),
         new("resend-duplicate-event", "Resend duplicate event",
             "Publishes an already-seen event again to show idempotent consumers."),
         new("send-poison-message", "Send poison message",

@@ -9,6 +9,12 @@ const KafkaInternalsPage = lazy(() =>
   import("@/pages/kafka-internals-page").then((m) => ({ default: m.KafkaInternalsPage })),
 )
 
+const OrdersPage = lazy(() => import("@/pages/orders-page").then((m) => ({ default: m.OrdersPage })))
+
+const OrderDetailPage = lazy(() =>
+  import("@/pages/order-detail-page").then((m) => ({ default: m.OrderDetailPage })),
+)
+
 const DeadLettersPage = lazy(() =>
   import("@/pages/dead-letters-page").then((m) => ({ default: m.DeadLettersPage })),
 )
@@ -36,7 +42,23 @@ export function AppRoutes() {
             </Suspense>
           }
         />
-        {/* Later steps: /orders/:orderId, /services */}
+        <Route
+          path="orders"
+          element={
+            <Suspense fallback={pageFallback}>
+              <OrdersPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="orders/:orderId"
+          element={
+            <Suspense fallback={pageFallback}>
+              <OrderDetailPage />
+            </Suspense>
+          }
+        />
+        {/* Later steps: /services */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils"
 
 const RESEND_DUPLICATE = "resend-duplicate-event"
 const SEND_POISON = "send-poison-message"
+/** Scenarios that act on one order: the feed's orderId filter picks it (otherwise the scenario picks the newest that fits). */
+const ORDER_TARGETED = new Set([RESEND_DUPLICATE, "cancel-order", "dispatch-shipment", "deliver-shipment"])
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -74,7 +76,7 @@ export function ScenarioPanel({ orderFilter, onFocusOrder }: ScenarioPanelProps)
 
   const runScenario = (scenario: Scenario) => {
     let input: ScenarioInput | undefined
-    if (scenario.name === RESEND_DUPLICATE && targetOrder) input = { orderId: targetOrder }
+    if (ORDER_TARGETED.has(scenario.name) && targetOrder) input = { orderId: targetOrder }
     else if (scenario.name === SEND_POISON) input = { kind: poisonKind }
     run.mutate({ scenario, input })
   }
@@ -92,6 +94,19 @@ export function ScenarioPanel({ orderFilter, onFocusOrder }: ScenarioPanelProps)
             </>
           ) : (
             <>the latest OrderPlaced. Filter the feed by a full orderId to pick another one.</>
+          )}
+        </p>
+      )
+    if (ORDER_TARGETED.has(scenario.name) && scenario.name !== RESEND_DUPLICATE)
+      return (
+        <p className="text-xs text-muted-foreground">
+          Acts on{" "}
+          {targetOrder ? (
+            <>
+              order <span className="font-mono text-foreground">{shortId(targetOrder)}</span> (from the feed filter).
+            </>
+          ) : (
+            <>the newest order that fits. Filter the feed by a full orderId to pick one.</>
           )}
         </p>
       )

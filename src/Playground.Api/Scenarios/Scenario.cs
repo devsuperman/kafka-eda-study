@@ -45,6 +45,8 @@ public sealed class ScenarioRejectedException(int statusCode, string message) : 
     public static ScenarioRejectedException BadRequest(string message) => new(StatusCodes.Status400BadRequest, message);
 
     public static ScenarioRejectedException NotFound(string message) => new(StatusCodes.Status404NotFound, message);
+
+    public static ScenarioRejectedException Conflict(string message) => new(StatusCodes.Status409Conflict, message);
 }
 
 /// <summary>Listed in the UI (disabled) until a later roadmap step implements it.</summary>

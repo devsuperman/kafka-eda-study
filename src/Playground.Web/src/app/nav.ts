@@ -11,7 +11,7 @@ export interface NavItem {
 // Add new pages here and in routes.tsx.
 export const NAV_ITEMS: NavItem[] = [
   { to: "/", label: "Live stream", icon: ActivityIcon, available: true },
-  { to: "/orders", label: "Order detail", icon: PackageSearchIcon, available: false },
+  { to: "/orders", label: "Order detail", icon: PackageSearchIcon, available: true },
   { to: "/kafka", label: "Kafka internals", icon: BoxesIcon, available: true },
   { to: "/dead-letters", label: "Dead letters", icon: ArchiveXIcon, available: true },
   { to: "/services", label: "Service state", icon: ServerIcon, available: false },

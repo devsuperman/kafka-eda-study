@@ -26,19 +26,29 @@ public sealed class OrderEventsConsumer(
     protected override async Task HandleAsync(
         EventEnvelope envelope, ConsumeResult<string, string> result, CancellationToken cancellationToken)
     {
-        if (!envelope.Is<OrderPlaced>())
-        {
-            // Steps 7-8 add OrderCancelled (release) and OrderShipped (commit).
-            Logger.LogDebug("Ignoring {EventType} for order {OrderId}", envelope.EventType, envelope.OrderId);
-            return;
-        }
-
         Logger.LogInformation(
             "Instance {Instance} handling {EventType} for order {OrderId} from {TopicPartitionOffset}",
             Environment.MachineName, envelope.EventType, envelope.OrderId, result.TopicPartitionOffset);
 
         await using var scope = scopeFactory.CreateAsyncScope();
-        await scope.ServiceProvider.GetRequiredService<ReserveStockHandler>()
-            .HandleAsync(envelope, envelope.GetPayload<OrderPlaced>(), cancellationToken);
+        if (envelope.Is<OrderPlaced>())
+        {
+            await scope.ServiceProvider.GetRequiredService<ReserveStockHandler>()
+                .HandleAsync(envelope, envelope.GetPayload<OrderPlaced>(), cancellationToken);
+        }
+        else if (envelope.Is<OrderCancelled>())
+        {
+            await scope.ServiceProvider.GetRequiredService<StockOutcomeHandler>()
+                .ReleaseAsync(envelope, envelope.GetPayload<OrderCancelled>(), cancellationToken);
+        }
+        else if (envelope.Is<OrderShipped>())
+        {
+            await scope.ServiceProvider.GetRequiredService<StockOutcomeHandler>()
+                .CommitAsync(envelope, cancellationToken);
+        }
+        else
+        {
+            Logger.LogDebug("Ignoring {EventType} for order {OrderId}", envelope.EventType, envelope.OrderId);
+        }
     }
 }

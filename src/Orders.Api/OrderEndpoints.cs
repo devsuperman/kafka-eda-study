@@ -19,13 +19,15 @@ public sealed record OrderDto(
     Guid CorrelationId,
     OrderStatus Status,
     string? CancelReason,
+    bool StockReserved,
+    bool PaymentAuthorized,
     IReadOnlyList<OrderLineDto> Lines,
     decimal Total,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt)
 {
     public static OrderDto From(Order o) => new(
-        o.Id, o.CustomerId, o.CorrelationId, o.Status, o.CancelReason,
+        o.Id, o.CustomerId, o.CorrelationId, o.Status, o.CancelReason, o.StockReserved, o.PaymentAuthorized,
         [.. o.Lines.Select(l => new OrderLineDto(l.Sku, l.Quantity, l.UnitPrice))],
         o.Total, o.CreatedAt, o.UpdatedAt);
 }
@@ -39,6 +41,7 @@ public static class OrderEndpoints
         app.MapPost("/orders", PlaceOrderAsync).WithTags("Orders");
         app.MapGet("/orders/{id:guid}", GetOrderAsync).WithTags("Orders");
         app.MapGet("/orders", ListOrdersAsync).WithTags("Orders");
+        app.MapPost("/orders/{id:guid}/cancel", CancelOrderAsync).WithTags("Orders");
         app.MapGet("/products", () => Products.All).WithTags("Products");
         return app;
     }
@@ -80,6 +83,35 @@ public static class OrderEndpoints
     {
         var order = await db.Orders.AsNoTracking().FirstOrDefaultAsync(o => o.Id == id, ct);
         return order is null ? TypedResults.NotFound() : TypedResults.Ok(OrderDto.From(order));
+    }
+
+    /// <summary>Rule O6: the customer can cancel until the order has shipped. Compensations follow from the event.</summary>
+    private static async Task<Results<Ok<OrderDto>, NotFound, ProblemHttpResult>> CancelOrderAsync(
+        Guid id, OrdersDbContext db, IOutbox outbox, TimeProvider clock, CancellationToken ct)
+    {
+        var order = await db.Orders.FirstOrDefaultAsync(o => o.Id == id, ct);
+        if (order is null)
+            return TypedResults.NotFound();
+
+        if (!order.Cancel(CancelReasons.Customer, clock.GetUtcNow()))
+            return TypedResults.Problem(
+                detail: $"An order that is {order.Status} cannot be cancelled (rule O6: only before it ships).",
+                statusCode: StatusCodes.Status409Conflict);
+
+        outbox.Add(Topics.Orders, EventEnvelope.Create(new OrderCancelled(CancelReasons.Customer), order.Id, order.CorrelationId));
+        try
+        {
+            await db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // The saga changed the order at the same moment (e.g. it was just confirmed or shipped). Ask again.
+            return TypedResults.Problem(
+                detail: "The order changed while it was being cancelled; reload it and try again.",
+                statusCode: StatusCodes.Status409Conflict);
+        }
+
+        return TypedResults.Ok(OrderDto.From(order));
     }
 
     private static async Task<Ok<List<OrderDto>>> ListOrdersAsync(

@@ -42,9 +42,12 @@ public static class InventoryEndpoints
     }
 
     private static async Task<Ok<List<ReservationDto>>> ListReservationsAsync(
-        InventoryDbContext db, CancellationToken ct, int limit = 50)
+        InventoryDbContext db, CancellationToken ct, Guid? orderId = null, int limit = 50)
     {
-        var reservations = await db.Reservations.AsNoTracking()
+        var query = db.Reservations.AsNoTracking();
+        if (orderId is { } id)
+            query = query.Where(r => r.OrderId == id);
+        var reservations = await query
             .OrderByDescending(r => r.CreatedAt)
             .Take(Math.Clamp(limit, 1, 200))
             .ToListAsync(ct);

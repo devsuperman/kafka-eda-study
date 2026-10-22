@@ -22,6 +22,7 @@ builder.Services.AddDbContext<InventoryDbContext>(o =>
 builder.Services.AddInbox<InventoryDbContext>();
 builder.Services.AddOutbox<InventoryDbContext>();
 builder.Services.AddScoped<ReserveStockHandler>();
+builder.Services.AddScoped<StockOutcomeHandler>(); // step 7: release on OrderCancelled, commit on OrderShipped
 builder.Services.AddHostedService<OrderEventsConsumer>();
 
 var app = builder.Build();
@@ -43,3 +44,5 @@ app.MapDefaultEndpoints();
 app.MapInventoryEndpoints();
 
 app.Run();
+
+public partial class Program { }

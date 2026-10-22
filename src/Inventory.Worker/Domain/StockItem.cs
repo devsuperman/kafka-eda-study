@@ -38,4 +38,25 @@ public sealed class StockItem
         Available -= quantity;
         Reserved += quantity;
     }
+
+    /// <summary>Rule I4: a cancelled order gives its held units back to <see cref="Available"/>.</summary>
+    public void Release(int quantity)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
+        if (quantity > Reserved)
+            throw new InvalidOperationException($"Cannot release {quantity} of {Sku}: only {Reserved} reserved.");
+
+        Reserved -= quantity;
+        Available += quantity;
+    }
+
+    /// <summary>Rule I4: a shipped order takes its held units out of stock for good.</summary>
+    public void Commit(int quantity)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(quantity);
+        if (quantity > Reserved)
+            throw new InvalidOperationException($"Cannot commit {quantity} of {Sku}: only {Reserved} reserved.");
+
+        Reserved -= quantity;
+    }
 }

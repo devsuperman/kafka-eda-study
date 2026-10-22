@@ -67,11 +67,11 @@ Work top to bottom: Phase 0 once, then one roadmap step at a time. A step is don
 
 ### Step 7: Choreography saga and compensation
 
-- [ ] Orders: confirm on both answers (O4), cancel on failure; publish `OrderConfirmed` / `OrderCancelled`
-- [ ] Inventory releases and Payments voids on `OrderCancelled` (I4, P3)
-- [ ] Shipping.Api: create shipment on `OrderConfirmed`; dispatch and deliver endpoints (S1, S2); Orders publishes `OrderShipped` / `OrderDelivered`; Payments captures, Inventory commits
-- [ ] Playground: remaining scenario buttons + order detail swimlane
-- [ ] Integration tests for flows 1–3 and 5
+- [x] Orders: confirm on both answers (O4), cancel on failure; publish `OrderConfirmed` / `OrderCancelled`
+- [x] Inventory releases and Payments voids on `OrderCancelled` (I4, P3)
+- [x] Shipping.Api: create shipment on `OrderConfirmed`; dispatch and deliver endpoints (S1, S2); Orders publishes `OrderShipped` / `OrderDelivered`; Payments captures, Inventory commits
+- [x] Playground: remaining scenario buttons + order detail swimlane
+- [x] Integration tests for flows 1–3 and 5
 
 **Done when:** flows 1, 2, 3 and 5 match the Business Rules doc in the swimlane and in tests.
 

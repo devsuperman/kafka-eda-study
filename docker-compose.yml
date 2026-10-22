@@ -103,6 +103,24 @@ services:
       ConnectionStrings__Notifications: Host=postgres;Database=notifications;Username=postgres;Password=postgres
     depends_on: *app-deps
 
+  payments-worker:
+    build: { context: ., args: { PROJECT: Payments.Worker } }
+    restart: on-failure
+    environment:
+      <<: *dotnet-env
+      OTEL_SERVICE_NAME: payments-worker
+      ConnectionStrings__Payments: Host=postgres;Database=payments;Username=postgres;Password=postgres
+    depends_on: *app-deps
+
+  shipping-api:
+    build: { context: ., args: { PROJECT: Shipping.Api } }
+    ports: ["5002:8080"]   # POST /shipments/{orderId}/dispatch and /deliver
+    environment:
+      <<: *dotnet-env
+      OTEL_SERVICE_NAME: shipping-api
+      ConnectionStrings__Shipping: Host=postgres;Database=shipping;Username=postgres;Password=postgres
+    depends_on: *app-deps
+
   playground-api:
     build: { context: ., args: { PROJECT: Playground.Api } }
     ports: ["5003:8080"]
@@ -110,6 +128,7 @@ services:
       <<: *dotnet-env
       OTEL_SERVICE_NAME: playground-api
       Services__OrdersApi: http://orders-api:8080
+      Services__ShippingApi: http://shipping-api:8080
     depends_on: *app-deps
 
   playground-web:

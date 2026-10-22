@@ -126,10 +126,18 @@ namespace KafkaEdaStudy.Orders.Data.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("PaymentAuthorized")
+                        .HasColumnType("boolean")
+                        .HasColumnName("payment_authorized");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<bool>("StockReserved")
+                        .HasColumnType("boolean")
+                        .HasColumnName("stock_reserved");
 
                     b.Property<decimal>("Total")
                         .HasPrecision(18, 2)
@@ -137,6 +145,12 @@ namespace KafkaEdaStudy.Orders.Data.Migrations
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.HasKey("Id");
 
